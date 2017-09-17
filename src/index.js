@@ -2,9 +2,10 @@
 An example of how to create a basic isometric game world using Hexi's
 `isoRectangle` and `addIsoProperties` methods.
 */
+let thingsToLoad = ["assets/images/example_map.png"];
 
 //Create a new Hexi instance, and start it.
-let g = hexi(512, 512, setup);
+let g = hexi(512, 512, setup, thingsToLoad, load);
 
 //Scale the canvas to the maximum browser dimensions
 g.scaleToWindow();
@@ -14,6 +15,18 @@ let world, player;
 
 //Start Hexi
 g.start();
+
+function load(){
+
+  //Display the file currently being loaded
+  console.log(`loading: ${g.loadingFile}`); 
+
+  //Display the percentage of files currently loaded
+  console.log(`progress: ${g.loadingProgress}`);
+
+  //Add an optional loading bar 
+  g.loadingBar();
+}
 
 function setup() {
 
@@ -105,7 +118,7 @@ function setup() {
             //sprite = g.rectangle(world.cartTilewidth, world.cartTileheight, 0xFF0000);
 
             //Define this sprite as the `player`
-            player = sprite;
+            player = new Player(world.layers[0,1], world.layers[0,0],column,row,sprite);
         }
 
 
@@ -130,4 +143,84 @@ function setup() {
   //Position the world inside the canvas
   let canvasOffset = (g.canvas.width / 2) - world.cartTilewidth;
   world.x += canvasOffset;
+  
+  g.state = play;
 }
+
+
+function play() {
+	
+	//console.log("This is the play function yay!");
+	
+	g.move(player.sprite);
+}
+
+
+class Player {
+
+	constructor(movelayer, maplayer, x, y, sprite){
+		this.x = x;
+		this.y = y;
+		this.leftArrow = g.keyboard(37);
+		this.rightArrow = g.keyboard(39);
+		this.upArrow = g.keyboard(38);
+		this.downArrow = g.keyboard(40);
+		this.sprite = sprite;
+		this.maplayer = maplayer;
+		this.movelayer = movelayer;
+		this.sprite.vx = 0;
+		this.sprite.vy = 0;
+		console.log(this.maplayer);
+		
+		this.leftArrow.press = this.moveLeft;
+		
+		this.rightArrow.press = this.moveRight; 
+		
+		this.upArrow.press =  this.moveUp;
+		
+		this.downArrow.press = this.moveDown;
+	}
+	
+	moveUp() {
+		if (this.maplayer[this.y-1, this.x] != 1){
+			this.movelayer[this.y-1, this.x] = 3;
+			this.movelayer[this.y, this.x] = 0;
+		}
+		
+		console.log("up");
+	}
+	
+	moveLeft() {
+		console.log(this.maplayer);
+		if (this.maplayer[this.y, this.x-1] != 1){
+			this.movelayer[this.y, this.x-1] = 3;
+			this.movelayer[this.y, this.x] = 0;
+			this.x = this.x-1;
+			this.sprite.x -= world.cartTilewidth;
+			this.sprite.x = this.sprite.isoX;
+		}
+			
+	}
+	
+	moveRight() {
+		if (this.maplayer[this.y, this.x+1] != 1){
+			this.movelayer[this.y, this.x+1] = 3;
+			this.movelayer[this.y, this.x] = 0;
+			this.x = this.x+1;
+		}
+		
+		console.log("right");
+		
+	}
+	
+	moveDown() {
+		if (this.maplayer[this.y+1, this.x] != 1){
+			this.movelayer[this.y+1, this.x] = 3;
+			this.movelayer[this.y+1, this.x] = 0;
+		}
+		
+		console.log("down");
+	}
+}
+
+
