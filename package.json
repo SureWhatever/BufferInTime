@@ -1,0 +1,32 @@
+{
+  "name": "bufferintime",
+  "version": "1.0.0",
+  "description": "A roguelike game with time travel",
+  "main": "index.js",
+  "dependencies": {
+    "pixi.js": "^4.5.5",
+    "webpack": "^3.6.0",
+    "webpack-dev-server": "^2.8.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "webpack-dev-server --progress",
+    "build": "webpack -p --progress",
+    "postbuild": "node postbuild.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SureWhatever/BufferInTime.git"
+  },
+  "keywords": [
+    "roguelike",
+    "game",
+    "javascript"
+  ],
+  "author": "jamesdaley2011@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SureWhatever/BufferInTime/issues"
+  },
+  "homepage": "https://github.com/SureWhatever/BufferInTime#readme"
+}
