@@ -1,4 +1,16 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
+
+const isProduction = process.env.npm_lifecycle_event === 'build'
+
+let htmlConfig = {
+  filename: 'index.html',
+  template: 'src/index.html'
+};
+
+if(isProduction) {
+  htmlConfig.inlineSource = '.(js|css)$'
+}
 
 module.exports = {
 	entry: "./src/index.js",
@@ -12,6 +24,8 @@ module.exports = {
 		]
 	},
 	plugins: [
-		new HtmlWebpackPlugin()
+		new HtmlWebpackPlugin(htmlConfig),
+		new HtmlWebpackInlineSourcePlugin()
 	]
 };
+

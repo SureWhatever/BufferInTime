@@ -1,5 +1,3 @@
-var PIXI = require('pixi')
-
 //Create the renderer
 var renderer = PIXI.autoDetectRenderer(256, 256);
 
