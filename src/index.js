@@ -12,6 +12,7 @@ g.scaleToWindow();
 
 //Declare variables used in more than one function
 let world, player;
+var leftArrow, rightArrow, upArrow, downArrow;
 
 //Start Hexi
 g.start();
@@ -144,82 +145,103 @@ function setup() {
   let canvasOffset = (g.canvas.width / 2) - world.cartTilewidth;
   world.x += canvasOffset;
   
+  	
+	leftArrow = g.keyboard(37);
+	rightArrow = g.keyboard(39);
+	upArrow = g.keyboard(38);
+	downArrow = g.keyboard(40);
+	
+	leftArrow.press = function(){
+		player.moveLeft();
+	}
+	
+	rightArrow.press = function(){
+		player.moveRight();
+	}
+	
+	upArrow.press = function(){
+		player.moveUp();
+	}
+	
+	downArrow.press = function(){
+		player.moveDown();
+	}
+	
+  
+  
   g.state = play;
 }
 
 
 function play() {
+
 	
 	//console.log("This is the play function yay!");
-	
+	//console.log(world.layers);
 	g.move(player.sprite);
 }
 
 
 class Player {
 
-	constructor(movelayer, maplayer, x, y, sprite){
+	constructor(charlayer, floorlayer, x, y, sprite){
+		//x and y are supposed to be the coords of the cell in the layer
 		this.x = x;
 		this.y = y;
-		this.leftArrow = g.keyboard(37);
-		this.rightArrow = g.keyboard(39);
-		this.upArrow = g.keyboard(38);
-		this.downArrow = g.keyboard(40);
 		this.sprite = sprite;
-		this.maplayer = maplayer;
-		this.movelayer = movelayer;
+		this.floorlayer = floorlayer;
+		this.charlayer = charlayer;
 		this.sprite.vx = 0;
 		this.sprite.vy = 0;
-		console.log(this.maplayer);
-		
-		this.leftArrow.press = this.moveLeft;
-		
-		this.rightArrow.press = this.moveRight; 
-		
-		this.upArrow.press =  this.moveUp;
-		
-		this.downArrow.press = this.moveDown;
 	}
 	
 	moveUp() {
-		if (this.maplayer[this.y-1, this.x] != 1){
-			this.movelayer[this.y-1, this.x] = 3;
-			this.movelayer[this.y, this.x] = 0;
+		if (this.floorlayer[this.y-1, this.x] != 1){
+			this.charlayer[this.y-1, this.x] = 3;
+			this.charlayer[this.y, this.x] = 0;
+			this.y = this.y+1;
+			//this.sprite.cartX += world.cartTilewidth;
+			this.sprite.cartY -= world.cartTileheight;
+			this.sprite.y = this.sprite.isoY;
+			this.sprite.x = this.sprite.isoX;
 		}
-		
-		console.log("up");
 	}
 	
 	moveLeft() {
-		console.log(this.maplayer);
-		if (this.maplayer[this.y, this.x-1] != 1){
-			this.movelayer[this.y, this.x-1] = 3;
-			this.movelayer[this.y, this.x] = 0;
+		if (this.floorlayer[this.y, this.x-1] != 1){
+			this.charlayer[this.y, this.x-1] = 3;
+			this.charlayer[this.y, this.x] = 0;
 			this.x = this.x-1;
-			this.sprite.x -= world.cartTilewidth;
+			this.sprite.cartX -= world.cartTilewidth;
+			//this.sprite.cartY = world.cartTileheight;
+			this.sprite.y = this.sprite.isoY;
 			this.sprite.x = this.sprite.isoX;
 		}
 			
 	}
 	
 	moveRight() {
-		if (this.maplayer[this.y, this.x+1] != 1){
-			this.movelayer[this.y, this.x+1] = 3;
-			this.movelayer[this.y, this.x] = 0;
+		if (this.floorlayer[this.y, this.x+1] != 1){
+			this.charlayer[this.y, this.x+1] = 3;
+			this.charlayer[this.y, this.x] = 0;
 			this.x = this.x+1;
-		}
-		
-		console.log("right");
-		
+			this.sprite.cartX += world.cartTilewidth;
+			//this.sprite.cartY = world.cartTileheight;
+			this.sprite.y = this.sprite.isoY;
+			this.sprite.x = this.sprite.isoX;
+		}		
 	}
 	
 	moveDown() {
-		if (this.maplayer[this.y+1, this.x] != 1){
-			this.movelayer[this.y+1, this.x] = 3;
-			this.movelayer[this.y+1, this.x] = 0;
+		if (this.floorlayer[this.y+1, this.x] != 1){
+			this.charlayer[this.y+1, this.x] = 3;
+			this.charlayer[this.y, this.x] = 0;
+			this.y = this.y+1;
+			//this.sprite.cartX += world.cartTilewidth;
+			this.sprite.cartY += world.cartTileheight;
+			this.sprite.y = this.sprite.isoY;
+			this.sprite.x = this.sprite.isoX;
 		}
-		
-		console.log("down");
 	}
 }
 
