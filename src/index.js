@@ -14,10 +14,16 @@ let tile = {
   EMPTY: 0,
   WALKABLE: 1,
   WALL: 2,
-  PLAYER: 3
+  PLAYER: 3,
+  BASICENEMY: 4
 };
 //Declare variables used in more than one function
-let world, player;
+let world, player, enemy = [];
+let up    = [ 0, -1];
+let down  = [ 0,  1];
+let left  = [-1,  0];
+let right = [ 1,  0];
+let idle  = [ 0,  0];
 var leftArrow, rightArrow, upArrow, downArrow;
 
 //Start Hexi
@@ -57,14 +63,14 @@ function setup() {
     //The environment layer. `2` represents the walls,
     //`1` represents the floors
     [
-      1, 2, 2, 2, 2, 2, 2, 0,
-      1, 1, 1, 1, 1, 1, 1, 2,
-      1, 1, 1, 1, 1, 1, 1, 2,
-      1, 1, 1, 1, 1, 1, 1, 2,
-      1, 1, 1, 1, 1, 1, 1, 2,
-      1, 1, 1, 1, 1, 1, 1, 2,
-      1, 1, 1, 1, 1, 1, 1, 2,
-      1, 2, 2, 2, 2, 2, 2, 1
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      2, 2, 2, 1, 1, 2, 2, 2,
+      1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1
     ],
 
     //The character layer. `3` represents the game character
@@ -72,13 +78,13 @@ function setup() {
     //sprites
     [
       0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 4, 0,
+      0, 4, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 3, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0
+      0, 0, 0, 0, 0, 0, 4, 0,
+      0, 0, 4, 0, 0, 0, 0, 0
     ]
   ];
 
@@ -130,6 +136,10 @@ function setup() {
             console.log("This is column: " + column + " row: " + row);
             console.log(world.layers[1]);
             player = new Player(world.layers[1], world.layers[0],column,row,sprite);
+            break;
+          case tile.BASICENEMY:
+            sprite = g.isoRectangle(world.cartTilewidth, world.cartTileheight, 0xAFAFAF);
+            enemy.push(new BasicEnemy(world.layers[1], world.layers[0], column, row, sprite));
         }
 
 
@@ -162,19 +172,19 @@ function setup() {
 	downArrow = g.keyboard(40);
 	
 	leftArrow.press = function(){
-		player.moveLeft();
+		player.move(left);
 	}
 	
 	rightArrow.press = function(){
-		player.moveRight();
+		player.move(right);
 	}
 	
 	upArrow.press = function(){
-		player.moveUp();
+		player.move(up);
 	}
 	
 	downArrow.press = function(){
-		player.moveDown();
+		player.move(down);
 	}
 	
   
@@ -189,6 +199,17 @@ function play() {
 	//console.log("This is the play function yay!");
 	//console.log(world.layers);
 	g.move(player.sprite);
+  
+  enemy.forEach(e => {
+    
+    if (player.actionPerformed == true){
+      e.run();
+    }
+    
+    g.move(e.sprite);
+  });
+  
+  player.actionPerformed = false;
 }
 
 
@@ -204,81 +225,92 @@ class Player {
 		//For some reason the velocities, decided to not be zero by default
 		this.sprite.vx = 0;
 		this.sprite.vy = 0;
+    this.actionPerformed = false;
 	}
   
   //Flattens 2D index into 1D
-  getIndex(row, column) {
+  getIndex(column, row) {
     let result = column + row * world.widthInTiles;
     return result;
   }
 	
-  //Player movement controls
-	moveUp() {
-    let floorpiece = this.floorlayer[this.getIndex(this.row-1,this.column)];
-    console.log(floorpiece);
+  move(direction) {
+    let floorpiece = null;
+    if ((this.row * world.widthInTiles) + this.column + direction[0] <= ((this.row + 1) * world.widthInTiles) - 1 &&
+        (this.row * world.widthInTiles) + this.column + direction[0] >= this.row * (world.widthInTiles)) {
+      floorpiece = this.floorlayer[this.getIndex(this.column + direction[0], this.row + direction[1])];
+    }
 		if (floorpiece == tile.WALKABLE){
-			this.charlayer[this.getIndex(this.row, this.column)] = 0;
-			this.row = this.row-1;
-			this.charlayer[this.getIndex(this.row, this.column)] = 3;
-			//this.sprite.cartX += world.cartTilewidth;
-			this.sprite.cartY -= world.cartTileheight;
+			this.charlayer[this.getIndex(this.column, this.row)] = 0;
+      
+			this.column = this.column + direction[0];
+      this.row = this.row + direction[1];
+      
+			this.charlayer[this.getIndex(this.column, this.row)] = 3;
+			this.sprite.cartX += world.cartTilewidth * direction[0];
+			this.sprite.cartY += world.cartTileheight * direction[1];
 			this.sprite.y = this.sprite.isoY;
 			this.sprite.x = this.sprite.isoX;
+      
+      this.actionPerformed = true;
 		}
     
-    console.log(this.row + ", " + this.column);
-	}
-	
-  moveDown() {
-		let floorpiece = this.floorlayer[this.getIndex(this.row+1,this.column)];
-    console.log(floorpiece);
-		if (floorpiece == tile.WALKABLE){
-			this.charlayer[this.getIndex(this.row, this.column)] = 0;
-			this.row = this.row+1;
-			this.charlayer[this.getIndex(this.row, this.column)] = 3;
-			//this.sprite.cartX += world.cartTilewidth;
-			this.sprite.cartY += world.cartTileheight;
-			this.sprite.y = this.sprite.isoY;
-			this.sprite.x = this.sprite.isoX;
-		}
     
-    console.log(this.row + ", " + this.column);
-	}
-  
-  moveLeft() {
-		let floorpiece = this.floorlayer[this.getIndex(this.row,this.column-1)];
-    console.log(floorpiece);
-		if (floorpiece == tile.WALKABLE){
-			this.charlayer[this.getIndex(this.row, this.column)] = 0;
-			this.column = this.column-1;
-			this.charlayer[this.getIndex(this.row, this.column)] = 3;
-			this.sprite.cartX -= world.cartTilewidth;
-			//this.sprite.cartY -= world.cartTileheight;
-			this.sprite.y = this.sprite.isoY;
-			this.sprite.x = this.sprite.isoX;
-		}
-    
-    console.log(this.row + ", " + this.column);
-			
-	}
-	
-	moveRight() {
-		let floorpiece = this.floorlayer[this.getIndex(this.row,this.column+1)];
-    console.log(floorpiece);
-		if (floorpiece == tile.WALKABLE){
-			this.charlayer[this.getIndex(this.row, this.column)] = 0;
-			this.column = this.column+1;
-			this.charlayer[this.getIndex(this.row, this.column)] = 3;
-			this.sprite.cartX += world.cartTilewidth;
-			//this.sprite.cartY -= world.cartTileheight;
-			this.sprite.y = this.sprite.isoY;
-			this.sprite.x = this.sprite.isoX;
-		}
-    
-    console.log(this.row + ", " + this.column);
-	}
-	
-	
+  }
 }
 
-
+class BasicEnemy{
+  constructor(charlayer, floorlayer, column, row, sprite){
+    //column and row are the coords of the cell in the layer
+		this.column = column;
+		this.row = row;
+		this.sprite = sprite;
+		this.floorlayer = floorlayer;
+		this.charlayer = charlayer;
+		//For some reason the velocities, decided to not be zero by default
+		this.sprite.vx = 0;
+		this.sprite.vy = 0;
+    
+    this.gid = 4;
+    this.action = [];
+    this.action.push(up, down, left, right, idle);
+  }
+  
+  getIndex(column, row) {
+    let result = column + row * world.widthInTiles;
+    return result;
+  }
+  
+  run(){
+    //Tries to move randomly
+    let direction = this.action[Math.floor(Math.random() * this.action.length)];
+    this.move(direction);
+    
+  }
+  move(direction){
+    let floorpiece = null;
+    
+    //The top and bottom of the grid are blocked off for movement because
+    //the spaces are out of bounds for the array, which is undefined
+    //since the world is a 1D array, we have to check if the character isnt
+    //going to be "out of bounds" to the left and right of the world
+    if ((this.row * world.widthInTiles) + this.column + direction[0] <= ((this.row + 1) * world.widthInTiles) - 1 &&
+        (this.row * world.widthInTiles) + this.column + direction[0] >= this.row * (world.widthInTiles)) {
+      floorpiece = this.floorlayer[this.getIndex(this.column + direction[0], this.row + direction[1])];
+    }
+    
+    if (floorpiece == tile.WALKABLE){
+      this.charlayer[this.getIndex(this.column, this.row)] = 0;
+      
+      this.column = this.column + direction[0];
+      this.row = this.row + direction[1];
+      this.charlayer[this.getIndex(this.column, this.row)] = this.gid;
+      
+      this.sprite.cartX += world.cartTilewidth * direction[0];
+      this.sprite.cartY += world.cartTileheight * direction[1];
+      this.sprite.y = this.sprite.isoY;
+      this.sprite.x = this.sprite.isoX;
+    }
+  }
+  
+}
