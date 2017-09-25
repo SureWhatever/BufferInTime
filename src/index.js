@@ -10,6 +10,12 @@ let g = hexi(512, 512, setup, thingsToLoad, load);
 //Scale the canvas to the maximum browser dimensions
 g.scaleToWindow();
 
+let tile = {
+  EMPTY: 0,
+  WALKABLE: 1,
+  WALL: 2,
+  PLAYER: 3
+};
 //Declare variables used in more than one function
 let world, player;
 var leftArrow, rightArrow, upArrow, downArrow;
@@ -31,6 +37,8 @@ function load(){
 
 function setup() {
 
+  let testarray = [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]];
+  console.log(testarray[0][1]);
   //Create the `world` container that defines our isometric
   //tile-based world
   world = g.group();
@@ -49,14 +57,14 @@ function setup() {
     //The environment layer. `2` represents the walls,
     //`1` represents the floors
     [
-      2, 2, 2, 2, 2, 2, 2, 2,
-      2, 1, 1, 1, 1, 1, 1, 2,
-      2, 1, 2, 1, 1, 2, 1, 2,
-      2, 1, 1, 1, 1, 2, 2, 2,
-      2, 1, 1, 1, 1, 1, 1, 2,
-      2, 2, 2, 1, 2, 1, 1, 2,
-      2, 1, 1, 1, 1, 1, 1, 2,
-      2, 2, 2, 2, 2, 2, 2, 2
+      1, 2, 2, 2, 2, 2, 2, 0,
+      1, 1, 1, 1, 1, 1, 1, 2,
+      1, 1, 1, 1, 1, 1, 1, 2,
+      1, 1, 1, 1, 1, 1, 1, 2,
+      1, 1, 1, 1, 1, 1, 1, 2,
+      1, 1, 1, 1, 1, 1, 1, 2,
+      1, 1, 1, 1, 1, 1, 1, 2,
+      1, 2, 2, 2, 2, 2, 2, 1
     ],
 
     //The character layer. `3` represents the game character
@@ -81,7 +89,7 @@ function setup() {
     layer.forEach((gid, index) => {
 
       //If the cell isn't empty (0) then create a sprite
-      if (gid !== 0) {
+      if (gid !== tile.EMPTY) {
 
         //Find the column and row that the sprite is on and also
         //its x and y pixel values.
@@ -97,7 +105,7 @@ function setup() {
         switch (gid) {
 
           //The floor
-          case 1:
+          case tile.WALKABLE:
 
             //Create a sprite using an isometric rectangle
             sprite = g.isoRectangle(world.cartTilewidth, world.cartTileheight, 0xCCCCFF);
@@ -106,20 +114,22 @@ function setup() {
             break;
 
             //The walls
-          case 2:
+          case tile.WALL:
             sprite = g.isoRectangle(world.cartTilewidth, world.cartTileheight, 0x99CC00);
             //Cartesian rectangle:
             //sprite = g.rectangle(world.cartTilewidth, world.cartTileheight, 0x99CC00);
             break;
 
             //The character
-          case 3:
+          case tile.PLAYER:
             sprite = g.isoRectangle(world.cartTilewidth, world.cartTileheight, 0xFF0000);
             //Cartesian rectangle:
             //sprite = g.rectangle(world.cartTilewidth, world.cartTileheight, 0xFF0000);
 
             //Define this sprite as the `player`
-            player = new Player(world.layers[0,1], world.layers[0,0],column,row,sprite);
+            console.log("This is column: " + column + " row: " + row);
+            console.log(world.layers[1]);
+            player = new Player(world.layers[1], world.layers[0],column,row,sprite);
         }
 
 
@@ -184,65 +194,91 @@ function play() {
 
 class Player {
 
-	constructor(charlayer, floorlayer, x, y, sprite){
-		//x and y are supposed to be the coords of the cell in the layer
-		this.x = x;
-		this.y = y;
+	constructor(charlayer, floorlayer, column, row, sprite){
+		//column and row are the coords of the cell in the layer
+		this.column = column;
+		this.row = row;
 		this.sprite = sprite;
 		this.floorlayer = floorlayer;
 		this.charlayer = charlayer;
+		//For some reason the velocities, decided to not be zero by default
 		this.sprite.vx = 0;
 		this.sprite.vy = 0;
 	}
+  
+  //Flattens 2D index into 1D
+  getIndex(row, column) {
+    let result = column + row * world.widthInTiles;
+    return result;
+  }
 	
+  //Player movement controls
 	moveUp() {
-		if (this.floorlayer[this.y-1, this.x] != 1){
-			this.charlayer[this.y-1, this.x] = 3;
-			this.charlayer[this.y, this.x] = 0;
-			this.y = this.y+1;
+    let floorpiece = this.floorlayer[this.getIndex(this.row-1,this.column)];
+    console.log(floorpiece);
+		if (floorpiece == tile.WALKABLE){
+			this.charlayer[this.getIndex(this.row, this.column)] = 0;
+			this.row = this.row-1;
+			this.charlayer[this.getIndex(this.row, this.column)] = 3;
 			//this.sprite.cartX += world.cartTilewidth;
 			this.sprite.cartY -= world.cartTileheight;
 			this.sprite.y = this.sprite.isoY;
 			this.sprite.x = this.sprite.isoX;
 		}
+    
+    console.log(this.row + ", " + this.column);
 	}
 	
-	moveLeft() {
-		if (this.floorlayer[this.y, this.x-1] != 1){
-			this.charlayer[this.y, this.x-1] = 3;
-			this.charlayer[this.y, this.x] = 0;
-			this.x = this.x-1;
-			this.sprite.cartX -= world.cartTilewidth;
-			//this.sprite.cartY = world.cartTileheight;
-			this.sprite.y = this.sprite.isoY;
-			this.sprite.x = this.sprite.isoX;
-		}
-			
-	}
-	
-	moveRight() {
-		if (this.floorlayer[this.y, this.x+1] != 1){
-			this.charlayer[this.y, this.x+1] = 3;
-			this.charlayer[this.y, this.x] = 0;
-			this.x = this.x+1;
-			this.sprite.cartX += world.cartTilewidth;
-			//this.sprite.cartY = world.cartTileheight;
-			this.sprite.y = this.sprite.isoY;
-			this.sprite.x = this.sprite.isoX;
-		}		
-	}
-	
-	moveDown() {
-		if (this.floorlayer[this.y+1, this.x] != 1){
-			this.charlayer[this.y+1, this.x] = 3;
-			this.charlayer[this.y, this.x] = 0;
-			this.y = this.y+1;
+  moveDown() {
+		let floorpiece = this.floorlayer[this.getIndex(this.row+1,this.column)];
+    console.log(floorpiece);
+		if (floorpiece == tile.WALKABLE){
+			this.charlayer[this.getIndex(this.row, this.column)] = 0;
+			this.row = this.row+1;
+			this.charlayer[this.getIndex(this.row, this.column)] = 3;
 			//this.sprite.cartX += world.cartTilewidth;
 			this.sprite.cartY += world.cartTileheight;
 			this.sprite.y = this.sprite.isoY;
 			this.sprite.x = this.sprite.isoX;
 		}
+    
+    console.log(this.row + ", " + this.column);
 	}
+  
+  moveLeft() {
+		let floorpiece = this.floorlayer[this.getIndex(this.row,this.column-1)];
+    console.log(floorpiece);
+		if (floorpiece == tile.WALKABLE){
+			this.charlayer[this.getIndex(this.row, this.column)] = 0;
+			this.column = this.column-1;
+			this.charlayer[this.getIndex(this.row, this.column)] = 3;
+			this.sprite.cartX -= world.cartTilewidth;
+			//this.sprite.cartY -= world.cartTileheight;
+			this.sprite.y = this.sprite.isoY;
+			this.sprite.x = this.sprite.isoX;
+		}
+    
+    console.log(this.row + ", " + this.column);
+			
+	}
+	
+	moveRight() {
+		let floorpiece = this.floorlayer[this.getIndex(this.row,this.column+1)];
+    console.log(floorpiece);
+		if (floorpiece == tile.WALKABLE){
+			this.charlayer[this.getIndex(this.row, this.column)] = 0;
+			this.column = this.column+1;
+			this.charlayer[this.getIndex(this.row, this.column)] = 3;
+			this.sprite.cartX += world.cartTilewidth;
+			//this.sprite.cartY -= world.cartTileheight;
+			this.sprite.y = this.sprite.isoY;
+			this.sprite.x = this.sprite.isoX;
+		}
+    
+    console.log(this.row + ", " + this.column);
+	}
+	
+	
 }
 
 
