@@ -16,10 +16,8 @@ export default class Player extends Character {
     }
 
     move_(direction){
-
-        let changedDirection = (this.facing[0] != direction[0]) || (this.facing[1] != direction[1]);
+        let changedDirection = (this.facingObj.direction[0] != direction[0]) || (this.facingObj.direction[1] != direction[1]);
         // move function modifies the facing to equal direction so have to store the value before comparing
         this.actionPerformed = this.move(direction) || changedDirection;
-
     }
 }

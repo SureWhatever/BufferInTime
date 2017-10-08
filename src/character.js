@@ -2,6 +2,17 @@ import Stats from './stats'
 import Player from './player'
 import { right, tile } from './constants'
 
+class Facing {
+    constructor(g, width, height, direction = right){
+        this.direction = direction
+        this.sprite = g.isoRectangle(16, 16, 0x000000);
+        g.addIsoProperties(this.sprite, 0, 0, width/2, height/2);
+        this.sprite.vx = 0;
+        this.sprite.vy = 0;
+        this.sprite.x = (this.column + this.direction[0]) * width;
+        this.sprite.y = (this.row + this.direction[1]) * height;
+    }
+}
 
 export default class Character {
   constructor(g, world, charlayer, floorlayer, column, row, sprite){
@@ -20,19 +31,10 @@ export default class Character {
     this.sprite.vx = 0;
     this.sprite.vy = 0;
 
-    this.facing = right;
-    
-    this.facingSprite = g.isoRectangle(16, 16, 0x000000);
-    g.addIsoProperties(this.facingSprite, 0, 0, world.cartTilewidth/2, world.cartTileheight/2);
-    this.facingSprite.vx = 0;
-    this.facingSprite.vy = 0;
-    
-    this.facingSprite.x = (this.column + this.facing[0]) * world.cartTilewidth;
-    this.facingSprite.y = (this.row + this.facing[1]) * world.cartTileheight;
-    world.addChild(this.facingSprite);
-    
-    
-    
+    this.facingObj = new Facing(g, world.cartTilewidth, world.cartTileheight);
+    world.addChild(this.facingObj.sprite);
+
+
     this.dead = false;
     this.attackStyle = function(other) {
       console.log(this.constructor.name + ": attacked: " + other.constructor.name);
@@ -44,12 +46,12 @@ export default class Character {
   }
   
   whoIsInFront(){
-    let index = this.getIndex(this.column + this.facing[0], this.row + this.facing[1]);
+    let index = this.getIndex(this.column + this.facingObj.direction[0], this.row + this.facingObj.direction[1]);
     return this.charlayer[index];
   }
   
   whatIsInFront() {
-    let index = this.getIndex(this.column + this.facing[0], this.row + this.facing[1]);
+    let index = this.getIndex(this.column + this.facingObj.direction[0], this.row + this.facingObj.direction[1]);
     return this.floorlayer[index];
   }
   
@@ -88,7 +90,7 @@ export default class Character {
 
   move(direction) {
       let retval = false;
-      this.facing = direction;
+      this.facingObj.direction = direction;
       let floorpiece = null;
       if ((this.row * this.widthInTiles) + this.column + direction[0] <= ((this.row + 1) * this.widthInTiles) - 1 &&
               (this.row * this.widthInTiles) + this.column + direction[0] >= this.row * (this.widthInTiles)) {
@@ -115,17 +117,17 @@ export default class Character {
           retval = true;
       } 
 
-      this.facingSprite.cartX = this.sprite.cartX + (this.cartTilewidth/2 * (this.facing[0] + 1));
-      this.facingSprite.cartY = this.sprite.cartY + (this.cartTileheight/2 * this.facing[1]);
-      this.facingSprite.y = this.facingSprite.isoY;
-      this.facingSprite.x = this.facingSprite.isoX;
+      this.facingObj.sprite.cartX = this.sprite.cartX + (this.cartTilewidth/2 * (this.facingObj.direction[0] + 1));
+      this.facingObj.sprite.cartY = this.sprite.cartY + (this.cartTileheight/2 * this.facingObj.direction[1]);
+      this.facingObj.sprite.y = this.facingObj.sprite.isoY;
+      this.facingObj.sprite.x = this.facingObj.sprite.isoX;
       if (this instanceof Player){
-          console.log("cartX:" + this.sprite.cartX);
-          console.log("worldWidth:" + this.cartTilewidth);
-          console.log("facing[0]:" + this.facing[0]);
-          console.log("cartX:" + this.sprite.cartX);
-          console.log("sprite:", this.sprite.x, this.sprite.y);
-          console.log("facing:", this.facingSprite.x, this.facingSprite.y);
+        console.log("cartX:" + this.sprite.cartX);
+        console.log("worldWidth:" + this.cartTilewidth);
+        console.log("facing[0]:" + this.facingObj.direction[0]);
+        console.log("cartX:" + this.sprite.cartX);
+        console.log("sprite:", this.sprite.x, this.sprite.y);
+        console.log("facing:", this.facingObj.sprite.x, this.facingObj.sprite.y);
       }
       return retval;
   }

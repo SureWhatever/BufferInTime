@@ -6,7 +6,7 @@ export class BasicEnemy extends Character {
     constructor(g, world, charlayer, floorlayer, column, row, sprite){
         //column and row are the coords of the cell in the layer
         super(g, world, charlayer, floorlayer, column, row, sprite);
-        console.log('initialized player');
+        console.log('initialized enemy');
 
         this.gid = 4;
         this.action = [];

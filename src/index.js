@@ -177,7 +177,7 @@ function setup() {
 
 function play() {
     g.move(player.sprite);
-    g.move(player.facingSprite);
+    g.move(player.facingObj.sprite);
 
     enemy.forEach(e => {
 
@@ -186,7 +186,7 @@ function play() {
         }
 
         g.move(e.sprite);
-        g.move(e.facingSprite);
+        g.move(e.facingObj.sprite);
     });
 
     player.actionPerformed = false;
