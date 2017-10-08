@@ -5,12 +5,11 @@ export default class Stats {
         this.defense = defense;
     }
 
-    calculateDamage(stats){
-        if (arguments.length === 0){
+    calculateDamage(stats = null){
+        if (stats === null){
             return this.attack;
-        } else if (typeof stats === "object"){
-            return Math.min(this.attack - stats.defense, stats.health);
         }
+        return Math.min(this.attack - stats.defense, stats.health);
     }
 }
 
