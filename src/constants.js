@@ -1,5 +1,12 @@
-export let up    = [ 0, -1];
-export let down  = [ 0,  1];
-export let left  = [-1,  0];
-export let right = [ 1,  0];
-export let idle  = [ 0,  0];
+export const up    = [ 0, -1];
+export const down  = [ 0,  1];
+export const left  = [-1,  0];
+export const right = [ 1,  0];
+export const idle  = [ 0,  0];
+export const tile = {
+    EMPTY: 0,
+    WALKABLE: 1,
+    WALL: 2,
+    PLAYER: 3,
+    BASICENEMY: 4
+};

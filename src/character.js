@@ -1,6 +1,7 @@
 import Stats from './stats'
 import Player from './player'
-import { right } from './constants'
+import { right, tile } from './constants'
+
 
 export default class Character {
   constructor(g, world, charlayer, floorlayer, column, row, sprite){
@@ -86,13 +87,6 @@ export default class Character {
   }
 
   move(direction) {
-        let tile = {
-          EMPTY: 0,
-          WALKABLE: 1,
-          WALL: 2,
-          PLAYER: 3,
-          BASICENEMY: 4
-        };
       let retval = false;
       this.facing = direction;
       let floorpiece = null;

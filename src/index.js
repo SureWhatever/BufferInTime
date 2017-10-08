@@ -1,5 +1,6 @@
 import Player from './player'
 import {BasicEnemy} from './enemy'
+import { up, down, left, right, idle, tile  } from './constants'
 
 let thingsToLoad = ["assets/images/example_map.png"];
 
@@ -9,20 +10,8 @@ let g = hexi(512, 512, setup, thingsToLoad, load);
 //Scale the canvas to the maximum browser dimensions
 g.scaleToWindow();
 
-let tile = {
-  EMPTY: 0,
-  WALKABLE: 1,
-  WALL: 2,
-  PLAYER: 3,
-  BASICENEMY: 4
-};
 //Declare variables used in more than one function
 let world, player, enemy = [];
-let up    = [ 0, -1];
-let down  = [ 0,  1];
-let left  = [-1,  0];
-let right = [ 1,  0];
-let idle  = [ 0,  0];
 var leftArrow, rightArrow, upArrow, downArrow;
 
 //Start Hexi
