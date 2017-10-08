@@ -15,9 +15,9 @@ export default class Player extends Character {
         this.stats = new Stats(12,2,1);
     }
 
-    move_(direction){
+    move(direction){
         let changedDirection = (this.facingObj.direction[0] != direction[0]) || (this.facingObj.direction[1] != direction[1]);
         // move function modifies the facing to equal direction so have to store the value before comparing
-        this.actionPerformed = this.move(direction) || changedDirection;
+        this.actionPerformed = this._move(direction) || changedDirection;
     }
 }

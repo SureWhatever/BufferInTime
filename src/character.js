@@ -88,7 +88,7 @@ export default class Character {
     return result;
   }
 
-  move(direction) {
+  _move(direction) {
       let retval = false;
       this.facingObj.direction = direction;
       let floorpiece = null;

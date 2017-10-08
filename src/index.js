@@ -156,19 +156,19 @@ function setup() {
 	downArrow = g.keyboard(40);
 	
 	leftArrow.press = function(){
-		player.move_(left);
+		player.move(left);
 	}
 	
 	rightArrow.press = function(){
-		player.move_(right);
+		player.move(right);
 	}
 	
 	upArrow.press = function(){
-		player.move_(up);
+		player.move(up);
 	}
 	
 	downArrow.press = function(){
-		player.move_(down);
+		player.move(down);
 	}
   
   g.state = play;

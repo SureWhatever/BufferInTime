@@ -22,8 +22,9 @@ export class BasicEnemy extends Character {
         } else {
             //Tries to move randomly
             let direction = this.action[Math.floor(Math.random() * this.action.length)];
-            this.move(direction);
+            this._move(direction);
         }
     }
 
 }
+
